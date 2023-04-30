@@ -4,6 +4,7 @@ from discord.ext import commands
 dotenv.load_dotenv()
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
+database_host = "mariadb"
 creator = "weselben#2929"
 system_instructions = f"Be a helpfully AI, named OrionAI, you where created by {creator}!"
 
@@ -14,7 +15,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 def create_database():
     db = mysql.connector.connect(
-        host="localhost",
+        host=database_host,
         user="root",
         password=os.getenv('MYSQL_ROOT_PASSWORD')
     )
@@ -36,7 +37,7 @@ def create_database():
 
 def save_to_database(channel_id, message_content, role, timestamp):
     db = mysql.connector.connect(
-        host="localhost",
+        host=database_host,
         user="root",
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
         database="discord_data"
@@ -66,7 +67,7 @@ async def on_ready():
 
 def get_context_from_db(channel_id, current_time):
     db = mysql.connector.connect(
-        host="localhost",
+        host=database_host,
         user="root",
         password=os.getenv('MYSQL_ROOT_PASSWORD'),
         database="discord_data"
