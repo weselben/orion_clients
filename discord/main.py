@@ -95,7 +95,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
     elif isinstance(message.channel, discord.DMChannel):
-        async with message.typing():
+        dm_channel = await message.author.create_dm()
+        async with dm_channel.typing():
             channel_id = str(message.channel.id)
             message_content = message.content
             timestamp_received = int(time.time())
