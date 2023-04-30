@@ -109,11 +109,10 @@ async def on_message(message):
             print(messages)
             response = openai_proxy(messages)
 
-            try:
+            max_length = 1999
+            if len(response) >= max_length:
                 await message.reply(response, mention_author=False)
-            except:
-                # Define the maximum length of each message part
-                max_length = 2000
+            elif len(response) <= max_length:
 
                 # Split the response string into multiple message parts
                 message_parts = []
