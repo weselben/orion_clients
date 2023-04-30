@@ -11,3 +11,11 @@ services:
       - "3306:3306"
     volumes:
       - ./data:/var/lib/mysql
+
+  orion_client:
+    build: .
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - mariadb
