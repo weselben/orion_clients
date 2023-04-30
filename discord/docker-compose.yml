@@ -1,4 +1,10 @@
 version: "3"
+
+networks:
+  internal:
+    external:
+      - False
+
 services:
   mariadb:
     image: mariadb
@@ -11,6 +17,8 @@ services:
       - "3306:3306"
     volumes:
       - ./data:/var/lib/mysql
+    networks:
+      - internal
 
   orion_client:
     build: .
@@ -19,3 +27,5 @@ services:
     restart: unless-stopped
     depends_on:
       - mariadb
+    networks:
+      - internal
