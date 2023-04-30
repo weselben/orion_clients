@@ -151,7 +151,9 @@ async def on_message(message):
                 for part in message_parts:
                     if i == 1:
                         await asyncio.sleep(1)
-                    await message.reply(part, mention_author=False)
+                        await message.send(part)
+                    else:
+                        await message.reply(part, mention_author=False)
                     i += 1
 
             timestamp_sent = int(time.time())
