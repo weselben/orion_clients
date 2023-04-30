@@ -6,6 +6,7 @@ networks:
 services:
   mariadb:
     image: mariadb
+    hostname: mariadb
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: discord_data
