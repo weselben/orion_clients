@@ -1,6 +1,6 @@
 import asyncio
 
-import openai, discord, os, dotenv, mysql.connector, time
+import openai, discord, os, dotenv, mysql.connector, time, logging
 from discord.ext import commands
 
 dotenv.load_dotenv()
@@ -9,6 +9,11 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 database_host = "mariadb"
 creator = "weselben#2929"
 system_instructions = f"Be a helpfully AI, named OrionAI, you where created by {creator}!"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s | %(message)s'
+)
 
 intents = discord.Intents.default()
 intents.members = True
@@ -34,7 +39,7 @@ def create_database():
         )
     """)
     db.commit()
-    print("Database and table created.")
+    logging.info("Database and table created.")
 
 
 def save_to_database(channel_id, message_content, role, timestamp):
@@ -49,7 +54,7 @@ def save_to_database(channel_id, message_content, role, timestamp):
     values = (channel_id, message_content, role, timestamp)
     cursor.execute(sql, values)
     db.commit()
-    print("Data saved to database.")
+    logging.info("Data saved to database.")
 
 
 def openai_proxy(messages):
@@ -57,13 +62,14 @@ def openai_proxy(messages):
         model="gpt-3.5-turbo",
         messages=messages,
     )
-
-    return response['choices'][0]['message']['content']
+    return_value = response['choices'][0]['message']['content']
+    logging.info(f'{bot.user.name}:{return_value}')
+    return return_value
 
 
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user.name} ({bot.user.id})")
+    logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
     create_database()
 
 
@@ -95,6 +101,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
     elif isinstance(message.channel, discord.DMChannel):
+        logging.info(f'{message.author}:{message.content}')
         dm_channel = await message.author.create_dm()
         async with dm_channel.typing():
             channel_id = str(message.channel.id)
@@ -106,7 +113,6 @@ async def on_message(message):
                                                                                 "content": message_content}
             else:
                 messages.append({"role": "user", "content": message_content})
-            print(messages)
             response = openai_proxy(messages)
 
             max_length = 1999
@@ -154,7 +160,6 @@ async def on_message(message):
                     else:
                         await message.reply(part, mention_author=False)
                     i += 1
-
             timestamp_sent = int(time.time())
             save_to_database(channel_id, response, "assistant", timestamp_sent)
             save_to_database(channel_id, message_content, "user", timestamp_received)
