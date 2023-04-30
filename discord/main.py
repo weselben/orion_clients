@@ -151,14 +151,14 @@ async def on_message(message):
                 for part in message_parts:
                     if i == 1:
                         await asyncio.sleep(1)
-                        await message.send(part)
+                        await message.channel.send(part)
                     else:
                         await message.reply(part, mention_author=False)
                     i += 1
 
             timestamp_sent = int(time.time())
-            save_to_database(channel_id, message_content, "user", timestamp_received)
             save_to_database(channel_id, response, "assistant", timestamp_sent)
+            save_to_database(channel_id, message_content, "user", timestamp_received)
         return
 
 
