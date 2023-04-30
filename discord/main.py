@@ -107,7 +107,7 @@ async def on_message(message):
             await message.reply(response, mention_author=False)
         elif len(response) >= int(2000):
             max_length = 2000
-            message_parts = [message[i:i + max_length] for i in range(0, len(message), max_length)]
+            message_parts = [response[i:i + max_length] for i in range(0, len(response), max_length)]
 
             for part in message_parts:
                 await message.reply(part, mention_author=False)
