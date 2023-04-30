@@ -103,7 +103,21 @@ async def on_message(message):
         print(messages)
         response = openai_proxy(messages)
 
-        await message.reply(response, mention_author=False)
+        if len(response) <= int(2000):
+            await message.reply(response, mention_author=False)
+        elif len(response) >= int(2000):
+            max_length = 2000
+            message_parts = [message[i:i + max_length] for i in range(0, len(message), max_length)]
+
+            for part in message_parts:
+                await message.reply(part, mention_author=False)
+        else:
+            try:
+                await message.reply(response, mention_author=False)
+            except Exception as e:
+                await message.reply(f"Error: {e}")
+
+
         timestamp_sent = int(time.time())
         save_to_database(channel_id, message_content, "user", timestamp_received)
         save_to_database(channel_id, response, "assistant", timestamp_sent)
