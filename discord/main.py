@@ -109,10 +109,9 @@ async def on_message(message):
             print(messages)
             response = openai_proxy(messages)
 
-            if len(response) <= int(2000):
+            try:
                 await message.reply(response, mention_author=False)
-            elif len(response) >= int(2000):
-
+            except:
                 # Define the maximum length of each message part
                 max_length = 2000
 
@@ -139,9 +138,12 @@ async def on_message(message):
                         # If there is a space character in the chunk, split the chunk at that position
                         if last_space != -1:
                             message_parts.append(chunk[:last_space])
-                            i -= (max_length - last_space)
+                            i_update = (max_length - last_space)
                         else:
                             message_parts.append(chunk)
+                            i_update = max_length
+
+                    i += i_update
 
                 # The resulting message parts list contains strings that are no longer than max_length characters.
 
@@ -150,12 +152,7 @@ async def on_message(message):
                     if i == 1:
                         await asyncio.sleep(1)
                     await message.reply(part, mention_author=False)
-                    i = 1
-            else:
-                try:
-                    await message.reply(response, mention_author=False)
-                except Exception as e:
-                    await message.reply(f"Error: {e}")
+                    i += 1
 
             timestamp_sent = int(time.time())
             save_to_database(channel_id, message_content, "user", timestamp_received)
