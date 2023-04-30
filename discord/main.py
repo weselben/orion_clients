@@ -8,6 +8,7 @@ dotenv.load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 database_host = "mariadb"
 creator = "weselben#2929"
+weselben_userid = "261636096276955136"
 system_instructions = f"Be a helpfully AI, named OrionAI, you where created by {creator}!"
 
 logging.basicConfig(
@@ -64,6 +65,9 @@ def openai_proxy(messages):
     )
     return_value = response['choices'][0]['message']['content']
     logging.info(f'{bot.user.name}:{return_value}')
+    if "weselben" in return_value or "weselben#2929" in return_value:
+        return_value = return_value.replace("weselben", f"<@{weselben_userid}>")
+        return_value = return_value.replace("Weselben", f"<@{weselben_userid}>")
     return return_value
 
 
@@ -96,6 +100,21 @@ def get_context_from_db(channel_id, current_time):
     return messages
 
 
+def split_response(response):
+    message_parts = []
+    max_length = 2000
+    while len(response) > max_length:
+        idx = response.rfind(' ', 0, max_length)
+        if idx == -1:
+            # No space found, split at max_length
+            message_parts.append(response[:max_length])
+            response = response[max_length:]
+        else:
+            message_parts.append(response[:idx])
+            response = response[idx+1:]
+    message_parts.append(response)
+    return message_parts
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -115,51 +134,17 @@ async def on_message(message):
                 messages.append({"role": "user", "content": message_content})
             response = openai_proxy(messages)
 
-            max_length = 1999
-            if len(response) >= max_length:
-                await message.reply(response, mention_author=False)
-            elif len(response) <= max_length:
+            message_parts = split_response(response)
 
-                # Split the response string into multiple message parts
-                message_parts = []
+            i = 0
+            for part in message_parts:
+                if i == 1:
+                    await asyncio.sleep(1)
+                    await message.channel.send(part)
+                else:
+                    await message.reply(part, mention_author=False)
+                i = 1
 
-                # Iterate over the indices of the response string in chunks of max_length
-                for i in range(0, len(response), max_length):
-
-                    # Get the current chunk of the response string
-                    chunk = response[i:i + max_length]
-
-                    # Check if the last character of the chunk is a space
-                    if chunk[-1] == ' ':
-
-                        # If it is, add the entire chunk to the message parts list
-                        message_parts.append(chunk)
-
-                    else:
-
-                        # If not, find the last space character in the chunk
-                        last_space = chunk.rfind(' ')
-
-                        # If there is a space character in the chunk, split the chunk at that position
-                        if last_space != -1:
-                            message_parts.append(chunk[:last_space])
-                            i_update = (max_length - last_space)
-                        else:
-                            message_parts.append(chunk)
-                            i_update = max_length
-
-                    i += i_update
-
-                # The resulting message parts list contains strings that are no longer than max_length characters.
-
-                i = 0
-                for part in message_parts:
-                    if i == 1:
-                        await asyncio.sleep(1)
-                        await message.channel.send(part)
-                    else:
-                        await message.reply(part, mention_author=False)
-                    i += 1
             timestamp_sent = int(time.time())
             save_to_database(channel_id, response, "assistant", timestamp_sent)
             save_to_database(channel_id, message_content, "user", timestamp_received)
