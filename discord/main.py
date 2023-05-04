@@ -120,11 +120,23 @@ async def on_message(message):
     if message.author == bot.user:
         return
     elif isinstance(message.channel, discord.DMChannel):
-        logging.info(f'{message.author}:{message.content}')
+        if message.attachments:
+            for attachment in message.attachments:
+                if attachment.filename.endswith('.txt'):
+                    # Download the attachment
+                    await attachment.save(attachment.filename)
+                    # Open the file and get the contents
+                    with open(attachment.filename) as file:
+                        contents = file.read()
+                        message_content = contents
+                    # Delete the file
+                    os.remove(attachment.filename)
+        else:
+            message_content = message.content
+        logging.info(f'{message.author}:{message_content}')
         dm_channel = await message.author.create_dm()
         async with dm_channel.typing():
             channel_id = str(message.channel.id)
-            message_content = message.content
             timestamp_received = int(time.time())
             messages = get_context_from_db(channel_id, time.time())
             if messages is None:
