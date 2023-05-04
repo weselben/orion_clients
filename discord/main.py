@@ -77,7 +77,7 @@ async def on_ready():
     create_database()
 
 
-def get_context_from_db(channel_id, current_time):
+def get_context_from_db(channel_id, current_time, limit=20):
     db = mysql.connector.connect(
         host=database_host,
         user="root",
@@ -85,7 +85,7 @@ def get_context_from_db(channel_id, current_time):
         database="discord_data"
     )
     cursor = db.cursor()
-    sql = "SELECT message_content FROM messages WHERE channel_id = %s AND unixtimestamp < %s ORDER BY unixtimestamp DESC LIMIT 10"
+    sql = f"SELECT message_content FROM messages WHERE channel_id = %s AND unixtimestamp < %s ORDER BY unixtimestamp DESC LIMIT {int(limit)}"
     values = (channel_id, current_time)
     cursor.execute(sql, values)
     results = cursor.fetchall()[::-1]  # Reverse the order of the results list
