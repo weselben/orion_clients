@@ -27,10 +27,10 @@ jobs:
       - name: Generate UML Diagrams
         id: generate_diagrams
         run: |
-          pyreverse -o png -p ${{github.repository}} .
-          dot -Tpng -O classes.png
+          pyreverse -o svg -p ${{github.repository}} .
+          mv classes.svg $IMAGE_NAME
         env:
-          IMAGE_NAME: ./classes.png
+          IMAGE_NAME: ./classes.svg
       
       - name: Commit UML Diagrams
         run: |
@@ -38,4 +38,4 @@ jobs:
           git config --global user.email "bengottwaldi04@gmail.com"
           git add .
           git commit -m "feat: add UML diagrams [skip ci]" -a
-          git push -u origin master
+          git push -u origin uml
