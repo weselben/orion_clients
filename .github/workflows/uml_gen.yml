@@ -18,6 +18,7 @@ jobs:
         run: |
           pip install pylint
           pip install graphviz pydot pydot-ng
+          sudo apt-get install graphviz
           
       - name: Generate UML Diagrams
         id: generate_diagrams
