@@ -17,22 +17,12 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install pylint
-          pip install graphviz
-          
-      - name: Add Universe Repository
-        run: |
-          sudo add-apt-repository universe
-          sudo apt-get update
-
-      - name: Install Graphviz and Dependencies
-        run: |
-          sudo apt-get install -y graphviz python-pydot python-pydot-ng
+          pip install graphviz pydot pydot-ng
           
       - name: Generate UML Diagrams
         id: generate_diagrams
         run: |
-          pyreverse --dot -p ${{github.repository}} .
-          dot -Tsvg -o classes.svg classes.dot
+          pyreverse -o svg -p ${{github.repository}} .
         env:
           IMAGE_NAME: ./classes.svg
       
