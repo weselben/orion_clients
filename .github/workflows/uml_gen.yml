@@ -2,7 +2,7 @@ name: Generate UML diagrams
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   generate_diagrams:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
       - name: Generate UML Diagrams
         id: generate_diagrams
         run: |
-          pyreverse -o png -p <project_name> .
+          pyreverse -o png -p ${{github.repository}} .
           dot -Tpng -O classes.png
         env:
           IMAGE_NAME: ./classes.png
