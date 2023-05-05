@@ -22,13 +22,13 @@ jobs:
       - name: Install Graphviz
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y graphviz
+          sudo apt-get install -y graphviz python-pydot python-pydot-ng
           
       - name: Generate UML Diagrams
         id: generate_diagrams
         run: |
-          pyreverse -o svg -p ${{github.repository}} .
-          mv classes.svg $IMAGE_NAME
+          pyreverse --dot -p ${{github.repository}} .
+          dot -Tsvg -o classes.svg classes.dot
         env:
           IMAGE_NAME: ./classes.svg
       
