@@ -71,6 +71,51 @@ def openai_proxy(messages):
     return return_value
 
 
+def openai_image_gen(message_content):
+    def interpret_text(message_content):
+        # Set up the OpenAI API request parameters
+        parameters = {
+
+        }
+
+        # Send a POST request to the OpenAI API
+        response = openai.Completion.create(
+            model='text-davinci-003',
+            prompt=f"Extract the most relevant keywords from this text:\n\n{message_content}\n\nKeywords: ",
+            temperature=0.5,
+            max_tokens=60,
+            top_p=1.0,
+            frequency_penalty=0.8,
+            presence_penalty=0.0
+        )
+
+        # Extract the generated text from the API response
+        generated_text = response.choices[0].text.strip()[10:].strip()
+
+        # Split the generated text by commas to get the keywords
+        keywords = [word.strip() for word in generated_text.split(',')]
+
+        return keywords
+
+    def generate_images(keywords, size='2048x2048'):
+        # Join the keywords into a prompt string
+        prompt = '\n'.join([f"{index + 1}. {keyword}" for index, keyword in enumerate(keywords)])
+
+        # Send a POST request to the OpenAI API
+        response = openai.Image.create(
+            prompt=prompt,
+            n=1,
+            size=size
+        )
+
+        image_urls = [asset.url for asset in response.assets]
+
+        # Return the URL of the best image as a string
+        return image_urls[0]
+
+    return generate_images(interpret_text(message_content))
+
+
 @bot.event
 async def on_ready():
     logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
@@ -111,14 +156,15 @@ def split_response(response):
             response = response[max_length:]
         else:
             message_parts.append(response[:idx])
-            response = response[idx+1:]
+            response = response[idx + 1:]
     message_parts.append(response)
     return message_parts
+
 
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
-        return
+        message.reply(openai_image_gen(message.content), mention_author=False)
     elif isinstance(message.channel, discord.DMChannel):
         if message.attachments:
             for attachment in message.attachments:
