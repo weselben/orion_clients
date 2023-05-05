@@ -1,0 +1,40 @@
+name: Generate UML Diagrams
+on:
+  push:
+    branches:
+      - main
+jobs:
+  generate_diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          
+      - name: Install Dependencies
+        run: |
+          pip install pylint
+          pip install graphviz
+          
+      - name: Install Graphviz
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y graphviz
+          
+      - name: Generate UML Diagrams
+        id: generate_diagrams
+        run: |
+          pyreverse -o png -p orion_clients .
+          dot -Tpng -O classes.dot
+        env:
+          IMAGE_NAME: ./uml_main.png
+      
+      - name: Commit UML Diagrams
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "bengottwaldi04@gmail.com"
+          git commit -m "feat: add UML diagrams [skip ci]" -a
+          git push -u origin main
