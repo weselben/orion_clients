@@ -1,8 +1,8 @@
-name: Generate UML Diagrams
+name: Generate UML diagrams
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   generate_diagrams:
     runs-on: ubuntu-latest
@@ -27,14 +27,15 @@ jobs:
       - name: Generate UML Diagrams
         id: generate_diagrams
         run: |
-          pyreverse -o png -p orion_clients .
-          dot -Tpng -O classes.dot
+          pyreverse -o png -p <project_name> .
+          dot -Tpng -O classes.png
         env:
-          IMAGE_NAME: ./uml_main.png
+          IMAGE_NAME: ./classes.png
       
       - name: Commit UML Diagrams
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "bengottwaldi04@gmail.com"
+          git add .
           git commit -m "feat: add UML diagrams [skip ci]" -a
-          git push -u origin main
+          git push -u origin master
