@@ -19,9 +19,13 @@ jobs:
           pip install pylint
           pip install graphviz
           
-      - name: Install Graphviz
+      - name: Add Universe Repository
         run: |
-          sudo apt-get update -y
+          sudo add-apt-repository universe
+          sudo apt-get update
+
+      - name: Install Graphviz and Dependencies
+        run: |
           sudo apt-get install -y graphviz python-pydot python-pydot-ng
           
       - name: Generate UML Diagrams
