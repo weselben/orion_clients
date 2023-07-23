@@ -11,7 +11,7 @@ services:
     environment:
       MYSQL_DATABASE: discord_data
     env_file:
-      - .env
+      - stack.env
     ports:
       - "3306:3306"
     volumes:
@@ -22,7 +22,7 @@ services:
   orion_client:
     build: .
     env_file:
-      - .env
+      - stack.env
     restart: unless-stopped
     depends_on:
       - mariadb
